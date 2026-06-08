@@ -75,6 +75,10 @@ def message_form():
     """Показывает форму и принимает отправленные сообщения."""
     if request.method == "POST":
         text = request.form.get("text", "")
+
+        if text.strip() == "Чай":
+            return render_template("easter.html", student_id=STUDENT_ID)
+
         append_message(text, request.remote_addr)
         return render_template("saved.html", msg=text, student_id=STUDENT_ID)
     return render_template("form.html")
