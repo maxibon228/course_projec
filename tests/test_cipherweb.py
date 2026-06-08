@@ -125,3 +125,41 @@ def test_old_four_column_csv_is_still_supported(client):
     assert len(messages) == 1
     assert messages[0]["algorithm"] == "caesar"
     assert messages[0]["text"] == "Старая строка"
+
+
+def test_easter_page_links_to_telegram_quest(client):
+    test_client, csv_path = client
+
+    response = test_client.post(
+        f"/{srv.STUDENT_ID}",
+        data={"text": "Чай", "algorithm": "vigenere"},
+        follow_redirects=True,
+    )
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "Пасхалка найдена" in html
+    assert "Перейти на следующий этап квеста" in html
+    assert "https://t.me/TeaQuizzesBot" in html
+    assert 'target="_blank"' in html
+    assert "Чай сохранён для перерыва между шифрами." not in html
+    assert "Вернуться на главную" in html
+    assert not csv_path.exists() or csv_path.read_text(encoding="utf-8") == ""
+
+
+def test_algorithm_scroll_uses_fixed_window_classes(client):
+    test_client, _csv_path = client
+
+    response = test_client.get(f"/{srv.STUDENT_ID}")
+    html = response.get_data(as_text=True)
+    css = (PROJECT_ROOT / "static" / "css" / "style.css").read_text(encoding="utf-8")
+
+    assert response.status_code == 200
+    assert "algorithm-stats-column" in html
+    assert "algorithm-stats-scroll" in html
+    assert "--algorithm-card-gap" in css
+    assert "align-self: stretch;" in css
+    assert "height: 100%;" in css
+    assert "max-height: 100%;" in css
+    assert "flex: 0 0 calc(50% - 7px);" in css
+    assert "overflow: hidden;" in css

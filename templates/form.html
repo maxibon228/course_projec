@@ -48,8 +48,8 @@
         </form>
     </article>
 
-    <aside class="stats-grid" aria-label="Статистика сообщений">
-        <article class="stat-card stat-purple reveal">
+    <aside class="stats-grid stats-modern" aria-label="Статистика сообщений">
+        <article class="stat-card stat-purple stat-total reveal">
             <div class="stat-icon" aria-hidden="true">🛡️</div>
             <div>
                 <strong>{{ stats.total }}</strong>
@@ -57,23 +57,8 @@
                 <small>Сохранено в CSV</small>
             </div>
         </article>
-        <article class="stat-card stat-blue reveal">
-            <div class="stat-icon" aria-hidden="true">↻</div>
-            <div>
-                <strong>{{ stats.caesar }}</strong>
-                <span>Цезарь</span>
-                <small>Классический сдвиг</small>
-            </div>
-        </article>
-        <article class="stat-card stat-green reveal">
-            <div class="stat-icon" aria-hidden="true">⇄</div>
-            <div>
-                <strong>{{ stats.atbash }}</strong>
-                <span>Атбаш</span>
-                <small>Зеркальная замена</small>
-            </div>
-        </article>
-        <article class="stat-card stat-orange reveal">
+
+        <article class="stat-card stat-orange stat-admin reveal">
             <div class="stat-icon" aria-hidden="true">⚙️</div>
             <div>
                 <strong>{{ stats.admin }}</strong>
@@ -81,6 +66,21 @@
                 <small>IP равен admin</small>
             </div>
         </article>
+
+        <div class="algorithm-stats-column reveal" aria-label="Статистика по шифрам">
+            <div class="algorithm-stats-scroll" data-algorithm-scroll>
+                {% for item in stats.algorithm_cards %}
+                    <article class="stat-card algorithm-stat-card" data-algorithm-id="{{ item.id }}">
+                        <div class="stat-icon" aria-hidden="true">{{ item.icon }}</div>
+                        <div>
+                            <strong>{{ item.count }}</strong>
+                            <span>{{ item.title }}</span>
+                            <small>{{ item.description }}</small>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
     </aside>
 </section>
 

@@ -1,4 +1,5 @@
 import csv
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
@@ -153,17 +154,23 @@ def clear_messages():
 
 
 def build_stats(messages):
-    """Формирует статистику для карточек dashboard."""
-    total = len(messages)
-    caesar_count = sum(1 for message in messages if message.get("algorithm") == "caesar")
-    atbash_count = sum(1 for message in messages if message.get("algorithm") == "atbash")
-    admin_count = sum(1 for message in messages if message.get("ip") == "admin")
+    """Формирует статистику для dashboard под любое количество алгоритмов."""
+    algorithm_counter = Counter(message.get("algorithm", "caesar") for message in messages)
+    algorithms = get_available_algorithms()
 
     return {
-        "total": total,
-        "caesar": caesar_count,
-        "atbash": atbash_count,
-        "admin": admin_count,
+        "total": len(messages),
+        "admin": sum(1 for message in messages if message.get("ip") == "admin"),
+        "algorithm_cards": [
+            {
+                "id": algorithm["id"],
+                "title": algorithm["title"],
+                "description": algorithm.get("description", ""),
+                "icon": algorithm.get("icon", "🔐"),
+                "count": algorithm_counter.get(algorithm["id"], 0),
+            }
+            for algorithm in algorithms
+        ],
     }
 
 

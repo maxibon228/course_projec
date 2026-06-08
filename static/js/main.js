@@ -60,7 +60,56 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // -----------------------------
-    // 2. Счётчик символов textarea
+    // 2. Сворачивание и разворачивание sidebar
+    // -----------------------------
+    const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+    const sidebar = document.querySelector("#sidebar");
+
+    const getSavedSidebarState = () => {
+        try {
+            return localStorage.getItem("sidebar-collapsed") === "true";
+        } catch (error) {
+            return false;
+        }
+    };
+
+    const saveSidebarState = (isCollapsed) => {
+        try {
+            localStorage.setItem("sidebar-collapsed", String(isCollapsed));
+        } catch (error) {
+            // Без localStorage меню всё равно работает до перезагрузки страницы.
+        }
+    };
+
+    const applySidebarState = (isCollapsed) => {
+        document.documentElement.classList.toggle("sidebar-collapsed", isCollapsed);
+        if (document.body) {
+            document.body.classList.toggle("sidebar-collapsed", isCollapsed);
+        }
+        if (sidebarToggle) {
+            sidebarToggle.setAttribute("aria-expanded", String(!isCollapsed));
+            sidebarToggle.setAttribute(
+                "title",
+                isCollapsed ? "Развернуть меню" : "Свернуть меню"
+            );
+        }
+        if (sidebar) {
+            sidebar.dataset.collapsed = String(isCollapsed);
+        }
+        saveSidebarState(isCollapsed);
+    };
+
+    applySidebarState(getSavedSidebarState());
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener("click", () => {
+            const isCollapsed = document.documentElement.classList.contains("sidebar-collapsed");
+            applySidebarState(!isCollapsed);
+        });
+    }
+
+    // -----------------------------
+    // 3. Счётчик символов textarea
     // -----------------------------
     const textarea = document.querySelector("[data-message-input]");
     const counter = document.querySelector("[data-char-counter]");
@@ -76,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // -----------------------------
-    // 3. Поиск по таблице сообщений
+    // 4. Поиск по таблице сообщений
     // -----------------------------
     const searchInput = document.querySelector("[data-table-search]");
     const rows = Array.from(document.querySelectorAll("[data-message-row]"));
@@ -103,7 +152,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // -----------------------------
-    // 4. Лёгкая анимация появления карточек
+    // 5. Плавная вертикальная прокрутка карточек алгоритмов
+    // -----------------------------
+    const algorithmScroll = document.querySelector("[data-algorithm-scroll]");
+    if (algorithmScroll) {
+        algorithmScroll.style.scrollBehavior = "smooth";
+        algorithmScroll.addEventListener("wheel", (event) => {
+            if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+                algorithmScroll.scrollTop += event.deltaY;
+            }
+        }, { passive: true });
+    }
+
+    // -----------------------------
+    // 6. Лёгкая анимация появления карточек
     // -----------------------------
     document.querySelectorAll(".reveal").forEach((element, index) => {
         element.style.animationDelay = `${Math.min(index * 0.06, 0.42)}s`;

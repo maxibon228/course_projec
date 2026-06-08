@@ -5,65 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Cipher Web{% endblock %}</title>
     <script>
-        // Применяем сохранённую тему до загрузки CSS, чтобы страница не мигала.
+        // Применяем сохранённые параметры до загрузки CSS, чтобы страница не мигала.
         try {
             const savedTheme = localStorage.getItem("theme") || "dark";
+            const sidebarCollapsed = localStorage.getItem("sidebar-collapsed") === "true";
             document.documentElement.setAttribute("data-theme", savedTheme);
+            if (sidebarCollapsed) {
+                document.documentElement.classList.add("sidebar-collapsed");
+            }
         } catch (error) {
             document.documentElement.setAttribute("data-theme", "dark");
         }
     </script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='4_2_fixed_atbash_theme') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='4_4_scroll_quest') }}">
 </head>
 <body>
     <div class="background-grid" aria-hidden="true"></div>
 
-    <div class="layout">
-        <aside class="sidebar">
+    <div class="layout" data-layout>
+        <aside class="sidebar" id="sidebar">
             <div class="brand">
                 <div class="brand-icon" aria-hidden="true">🔐</div>
-                <div>
+                <div class="brand-copy">
                     <div class="brand-title">Cipher Web</div>
                     <div class="brand-subtitle">Шифрование сообщений</div>
-                    <div class="brand-note">Студенческий проект</div>
-                    <div class="version-badge">v4.2 · Атбаш · светлая тема</div>
                 </div>
             </div>
 
             <nav class="menu" aria-label="Основное меню">
-                <a class="menu-item active" href="/{{ student_id|default(70193935) }}">
-                    <span>✉️</span><span>Главная</span>
+                <a class="menu-item active" href="/{{ student_id|default(70193935) }}" title="Главная">
+                    <span class="menu-icon" aria-hidden="true">⌂</span><span class="menu-text">Главная</span>
                 </a>
-                <a class="menu-item" href="/{{ student_id|default(70193935) }}#messages">
-                    <span>📨</span><span>Сообщения</span>
+                <a class="menu-item" href="/{{ student_id|default(70193935) }}#messages" title="Сообщения">
+                    <span class="menu-icon" aria-hidden="true">☷</span><span class="menu-text">Сообщения</span>
                 </a>
-                <a class="menu-item" href="/{{ student_id|default(70193935) }}#encrypt">
-                    <span>🔒</span><span>Шифрование</span>
+                <a class="menu-item" href="/{{ student_id|default(70193935) }}#encrypt" title="Шифрование">
+                    <span class="menu-icon" aria-hidden="true">🔒</span><span class="menu-text">Шифрование</span>
                 </a>
-                <a class="menu-item" href="/{{ student_id|default(70193935) }}#messages">
-                    <span>🕘</span><span>История</span>
+                <a class="menu-item" href="/{{ student_id|default(70193935) }}#messages" title="История">
+                    <span class="menu-icon" aria-hidden="true">◴</span><span class="menu-text">История</span>
                 </a>
-                <a class="menu-item" href="/reset">
-                    <span>⚙️</span><span>Настройки</span>
+                <a class="menu-item" href="/get_all.json" title="JSON">
+                    <span class="menu-icon" aria-hidden="true">{ }</span><span class="menu-text">JSON</span>
                 </a>
-                <a class="menu-item" href="/get_all.json">
-                    <span>❔</span><span>JSON</span>
+                <a class="menu-item" href="/reset" title="Очистить сообщения">
+                    <span class="menu-icon" aria-hidden="true">⌫</span><span class="menu-text">Очистить</span>
                 </a>
             </nav>
-
-            <div class="course-card">
-                <div class="course-icon" aria-hidden="true">🎓</div>
-                <div>
-                    <strong>Студенческий проект</strong>
-                    <p>Курсовая работа по теме шифрования сообщений</p>
-                </div>
-            </div>
         </aside>
 
         <main class="main">
             <header class="topbar">
                 <div class="topbar-left">
-                    <span class="hamburger" aria-hidden="true">☰</span>
+                    <button
+                        class="hamburger"
+                        id="sidebarToggle"
+                        type="button"
+                        aria-label="Свернуть или развернуть меню"
+                        aria-controls="sidebar"
+                        aria-expanded="true"
+                        data-sidebar-toggle>
+                        <span aria-hidden="true">☰</span>
+                    </button>
                     <h1>Панель управления</h1>
                 </div>
 
@@ -95,12 +98,12 @@
             {% block content %}{% endblock %}
 
             <footer class="footer">
-                <span>Cipher Web © 2024 — Студенческий проект</span>
+                <span>Cipher Web © 2024</span>
                 <span>🔒 Безопасность. Конфиденциальность. Шифрование.</span>
             </footer>
         </main>
     </div>
 
-    <script src="{{ url_for('static', filename='js/main.js', v='4_2_fixed_atbash_theme') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js', v='4_4_scroll_quest') }}"></script>
 </body>
 </html>
