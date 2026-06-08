@@ -1,17 +1,14 @@
-<!DOCTYPE html>
-<HTML>
-<HEAD>
-    <TITLE>Пасхалка</TITLE>
-</HEAD>
-<BODY style="margin:0; height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; font-family:Arial;">
-    <DIV>
-        <H1>Пасхалка</H1>
-        <P>Вы на верном этапе</P>
-        <P><A href="#">ссылка на тг бота</A></P>
+{% extends "base.html" %}
 
-        <FORM method="GET" action="/{{ student_id }}">
-            <INPUT type="submit" value="Отправить снова">
-        </FORM>
-    </DIV>
-</BODY>
-</HTML>
+{% block title %}Cipher Web — Пасхалка{% endblock %}
+
+{% block content %}
+<section class="center-section">
+    <article class="card result-card reveal">
+        <div class="result-icon" aria-hidden="true">🍵</div>
+        <h2>Пасхалка найдена</h2>
+        <p>Чай сохранён для перерыва между шифрами.</p>
+        <a class="primary-button link-button" href="/{{ student_id|default(70193935) }}">Вернуться на главную</a>
+    </article>
+</section>
+{% endblock %}

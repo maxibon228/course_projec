@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Cipher Web{% endblock %}</title>
+    <script>
+        // Применяем сохранённую тему до загрузки CSS, чтобы страница не мигала.
+        try {
+            const savedTheme = localStorage.getItem("theme") || "dark";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+        } catch (error) {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='4_2_fixed_atbash_theme') }}">
+</head>
+<body>
+    <div class="background-grid" aria-hidden="true"></div>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon" aria-hidden="true">🔐</div>
+                <div>
+                    <div class="brand-title">Cipher Web</div>
+                    <div class="brand-subtitle">Шифрование сообщений</div>
+                    <div class="brand-note">Студенческий проект</div>
+                    <div class="version-badge">v4.2 · Атбаш · светлая тема</div>
+                </div>
+            </div>
+
+            <nav class="menu" aria-label="Основное меню">
+                <a class="menu-item active" href="/{{ student_id|default(70193935) }}">
+                    <span>✉️</span><span>Главная</span>
+                </a>
+                <a class="menu-item" href="/{{ student_id|default(70193935) }}#messages">
+                    <span>📨</span><span>Сообщения</span>
+                </a>
+                <a class="menu-item" href="/{{ student_id|default(70193935) }}#encrypt">
+                    <span>🔒</span><span>Шифрование</span>
+                </a>
+                <a class="menu-item" href="/{{ student_id|default(70193935) }}#messages">
+                    <span>🕘</span><span>История</span>
+                </a>
+                <a class="menu-item" href="/reset">
+                    <span>⚙️</span><span>Настройки</span>
+                </a>
+                <a class="menu-item" href="/get_all.json">
+                    <span>❔</span><span>JSON</span>
+                </a>
+            </nav>
+
+            <div class="course-card">
+                <div class="course-icon" aria-hidden="true">🎓</div>
+                <div>
+                    <strong>Студенческий проект</strong>
+                    <p>Курсовая работа по теме шифрования сообщений</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <span class="hamburger" aria-hidden="true">☰</span>
+                    <h1>Панель управления</h1>
+                </div>
+
+                <div class="topbar-actions">
+                    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему">
+                        <span id="themeIcon">☾</span>
+                    </button>
+
+                    <div class="user-panel">
+                        <div class="avatar" aria-hidden="true">👤</div>
+                        <div>
+                            <strong>Студент</strong>
+                            <span>ID {{ student_id|default(70193935) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-list">
+                        {% for category, message in messages %}
+                            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+
+            <footer class="footer">
+                <span>Cipher Web © 2024 — Студенческий проект</span>
+                <span>🔒 Безопасность. Конфиденциальность. Шифрование.</span>
+            </footer>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js', v='4_2_fixed_atbash_theme') }}"></script>
+</body>
+</html>

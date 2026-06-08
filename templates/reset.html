@@ -1,6 +1,14 @@
-<!DOCTYPE html>
-<HTML>
-<BODY>
-<p>messages.csv стёрт</p>
-</BODY>
-</HTML>
+{% extends "base.html" %}
+
+{% block title %}Cipher Web — Сброс сообщений{% endblock %}
+
+{% block content %}
+<section class="center-section">
+    <article class="card result-card reveal">
+        <div class="result-icon" aria-hidden="true">🧹</div>
+        <h2>messages.csv стёрт</h2>
+        <p>Все сообщения удалены. Файл очищен и готов к новым записям.</p>
+        <a class="primary-button link-button" href="/{{ student_id|default(70193935) }}">Вернуться на главную</a>
+    </article>
+</section>
+{% endblock %}

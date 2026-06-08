@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog, ttk
 
-from cypher import decrypt, encrypt
+from cypher import decrypt_message, encrypt_message, get_algorithm_title, get_available_algorithms, normalize_algorithm
 
 
 DEFAULT_CSV_NAME = "messages.csv"
@@ -43,20 +43,36 @@ def ensure_csv_exists(csv_path):
 
 
 def read_messages(csv_path):
-    """Возвращает сообщения для отображения: текст уже расшифрован."""
+    """Возвращает сообщения для отображения: текст уже расшифрован.
+
+    Поддерживаются старые CSV-строки из 4 полей и новые строки из 5 полей:
+    id, datetime, ip, algorithm, encrypted_text.
+    """
     path = ensure_csv_exists(csv_path)
     messages = []
     with path.open("r", encoding="utf-8", newline="") as file:
         reader = csv.reader(file)
         for row in reader:
-            if len(row) != 4:
+            if len(row) >= 5:
+                message_id = row[0]
+                created_at = row[1]
+                ip_address = row[2]
+                algorithm = normalize_algorithm(row[3])
+                encrypted_text = ",".join(row[4:]) if len(row) > 5 else row[4]
+            elif len(row) == 4:
+                message_id, created_at, ip_address, encrypted_text = row
+                algorithm = "caesar"
+            else:
                 continue
+
             messages.append(
                 {
-                    "id": row[0],
-                    "datetime": row[1],
-                    "ip": row[2],
-                    "text": decrypt(row[3]),
+                    "id": message_id,
+                    "datetime": created_at,
+                    "ip": ip_address,
+                    "algorithm": algorithm,
+                    "algorithm_title": get_algorithm_title(algorithm),
+                    "text": decrypt_message(encrypted_text, algorithm=algorithm),
                 }
             )
     return messages
@@ -68,12 +84,14 @@ def write_messages(csv_path, messages):
     with path.open("w", encoding="utf-8", newline="") as file:
         writer = csv.writer(file)
         for message in messages:
+            algorithm = normalize_algorithm(message.get("algorithm", "caesar"))
             writer.writerow(
                 [
                     message["id"],
                     message["datetime"],
                     message["ip"],
-                    encrypt(message["text"]),
+                    algorithm,
+                    encrypt_message(message["text"], algorithm=algorithm),
                 ]
             )
 
@@ -85,15 +103,18 @@ def renumber_messages(messages):
     return messages
 
 
-def add_message(csv_path, text, ip="admin", now_value=None):
+def add_message(csv_path, text, ip="admin", algorithm="caesar", now_value=None):
     """Добавляет сообщение администратора и сразу сохраняет CSV."""
     messages = read_messages(csv_path)
     created_at = now_value or datetime.now().isoformat(timespec="seconds")
+    algorithm = normalize_algorithm(algorithm)
     messages.append(
         {
             "id": str(len(messages) + 1),
             "datetime": created_at,
             "ip": ip,
+            "algorithm": algorithm,
+            "algorithm_title": get_algorithm_title(algorithm),
             "text": text,
         }
     )
@@ -160,19 +181,21 @@ class AdminApp(tk.Tk):
         table_frame.columnconfigure(0, weight=1)
         table_frame.rowconfigure(0, weight=1)
 
-        columns = ("id", "datetime", "ip", "text")
+        columns = ("id", "datetime", "ip", "algorithm", "text")
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", selectmode="browse")
         self.tree.grid(row=0, column=0, sticky="nsew")
 
         self.tree.heading("id", text="id")
         self.tree.heading("datetime", text="datetime")
         self.tree.heading("ip", text="ip")
+        self.tree.heading("algorithm", text="algorithm")
         self.tree.heading("text", text="text")
 
         self.tree.column("id", width=60, anchor="center")
-        self.tree.column("datetime", width=200, anchor="w")
+        self.tree.column("datetime", width=190, anchor="w")
         self.tree.column("ip", width=120, anchor="center")
-        self.tree.column("text", width=650, anchor="w")
+        self.tree.column("algorithm", width=120, anchor="center")
+        self.tree.column("text", width=560, anchor="w")
 
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         scrollbar.grid(row=0, column=1, sticky="ns")
@@ -198,7 +221,21 @@ class AdminApp(tk.Tk):
         tk.Label(add_frame, text="Новое сообщение").grid(row=0, column=0, sticky="w")
         self.new_message_text = tk.Text(add_frame, height=4, wrap="word")
         self.new_message_text.grid(row=1, column=0, sticky="ew", pady=(5, 5))
-        tk.Button(add_frame, text="Добавить", command=self.add_new_message).grid(row=2, column=0, sticky="w")
+
+        algorithm_frame = tk.Frame(add_frame)
+        algorithm_frame.grid(row=2, column=0, sticky="w", pady=(0, 5))
+        tk.Label(algorithm_frame, text="Алгоритм:").grid(row=0, column=0, padx=(0, 8))
+        self.algorithm_var = tk.StringVar(value="caesar")
+        self.algorithm_combo = ttk.Combobox(
+            algorithm_frame,
+            textvariable=self.algorithm_var,
+            state="readonly",
+            values=[algorithm["id"] for algorithm in get_available_algorithms()],
+            width=16,
+        )
+        self.algorithm_combo.grid(row=0, column=1)
+
+        tk.Button(add_frame, text="Добавить", command=self.add_new_message).grid(row=3, column=0, sticky="w")
 
         tk.Label(self, textvariable=self.status_var, anchor="w", relief="sunken").grid(
             row=4, column=0, sticky="ew", padx=10, pady=(0, 10)
@@ -286,7 +323,17 @@ class AdminApp(tk.Tk):
             self.tree.delete(item)
 
         for message in read_messages(self.current_csv):
-            self.tree.insert("", "end", values=(message["id"], message["datetime"], message["ip"], message["text"]))
+            self.tree.insert(
+                "",
+                "end",
+                values=(
+                    message["id"],
+                    message["datetime"],
+                    message["ip"],
+                    message.get("algorithm_title", get_algorithm_title(message.get("algorithm", "caesar"))),
+                    message["text"],
+                ),
+            )
 
         children = list(self.tree.get_children())
         if selected_index is not None and children:
@@ -309,7 +356,7 @@ class AdminApp(tk.Tk):
             self._set_status("Сообщение содержит недопустимые символы")
             return
 
-        add_message(self.current_csv, text, ip="admin")
+        add_message(self.current_csv, text, ip="admin", algorithm=self.algorithm_var.get())
         self.new_message_text.delete("1.0", "end")
         self.refresh_table()
         self._set_status("Сообщение добавлено")

@@ -1,11 +1,14 @@
-<!DOCTYPE html>
-<HTML>
-<BODY>
-<p>Сообщение сохранено:</p>
-<p>{{ msg }}</p>
+{% extends "base.html" %}
 
-<FORM method="GET" action="/{{ student_id }}">
-    <INPUT type="submit" value="Отправить снова">
-</FORM>
-</BODY>
-</HTML>
+{% block title %}Cipher Web — Сообщение сохранено{% endblock %}
+
+{% block content %}
+<section class="center-section">
+    <article class="card result-card reveal">
+        <div class="result-icon" aria-hidden="true">✅</div>
+        <h2>Сообщение сохранено</h2>
+        <p>{{ msg }}</p>
+        <a class="primary-button link-button" href="/{{ student_id|default(70193935) }}">Вернуться на главную</a>
+    </article>
+</section>
+{% endblock %}

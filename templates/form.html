@@ -1,10 +1,137 @@
-<!DOCTYPE html>
-<HTML>
-<BODY>
-<FORM method="POST">
-    <LABEL>Введите сообщение:</LABEL><br>
-    <TEXTAREA style="width:95%" name="text"></TEXTAREA><br>
-    <INPUT type="submit" value="Отправить">
-</FORM>
-</BODY>
-</HTML>
+{% extends "base.html" %}
+
+{% block title %}Cipher Web — Панель управления{% endblock %}
+
+{% block content %}
+<section class="dashboard-hero" id="encrypt">
+    <article class="card message-card reveal">
+        <div class="section-title">
+            <span class="section-icon" aria-hidden="true">🔒</span>
+            <div>
+                <h2>Шифрование сообщения</h2>
+                <p>Выберите алгоритм и отправьте сообщение в зашифрованное хранилище.</p>
+            </div>
+        </div>
+
+        <form class="message-form" method="post" action="{{ url_for('message_form') }}">
+            <label for="text">Введите сообщение</label>
+            <div class="textarea-wrap">
+                <textarea
+                    id="text"
+                    name="text"
+                    maxlength="2000"
+                    required
+                    data-message-input
+                    placeholder="Введите текст сообщения для шифрования..."></textarea>
+                <span class="char-counter" data-char-counter>0 / 2000</span>
+            </div>
+
+            <div class="form-row">
+                <div class="field-group">
+                    <label for="algorithm">Алгоритм</label>
+                    <select name="algorithm" id="algorithm">
+                        {% for algorithm in algorithms %}
+                            <option value="{{ algorithm.id }}" {% if algorithm.id == selected_algorithm %}selected{% endif %}>
+                                {{ algorithm.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button class="primary-button" type="submit">
+                    <span>Отправить</span>
+                    <span aria-hidden="true">✈</span>
+                </button>
+            </div>
+
+            <p class="secure-note">🛡 Ваше сообщение будет зашифровано перед сохранением.</p>
+        </form>
+    </article>
+
+    <aside class="stats-grid" aria-label="Статистика сообщений">
+        <article class="stat-card stat-purple reveal">
+            <div class="stat-icon" aria-hidden="true">🛡️</div>
+            <div>
+                <strong>{{ stats.total }}</strong>
+                <span>Всего сообщений</span>
+                <small>Сохранено в CSV</small>
+            </div>
+        </article>
+        <article class="stat-card stat-blue reveal">
+            <div class="stat-icon" aria-hidden="true">↻</div>
+            <div>
+                <strong>{{ stats.caesar }}</strong>
+                <span>Цезарь</span>
+                <small>Классический сдвиг</small>
+            </div>
+        </article>
+        <article class="stat-card stat-green reveal">
+            <div class="stat-icon" aria-hidden="true">⇄</div>
+            <div>
+                <strong>{{ stats.atbash }}</strong>
+                <span>Атбаш</span>
+                <small>Зеркальная замена</small>
+            </div>
+        </article>
+        <article class="stat-card stat-orange reveal">
+            <div class="stat-icon" aria-hidden="true">⚙️</div>
+            <div>
+                <strong>{{ stats.admin }}</strong>
+                <span>Добавлено админом</span>
+                <small>IP равен admin</small>
+            </div>
+        </article>
+    </aside>
+</section>
+
+<section class="card table-card reveal" id="messages">
+    <div class="table-header">
+        <div class="section-title compact">
+            <span class="section-icon" aria-hidden="true">📨</span>
+            <h2>Сообщения</h2>
+        </div>
+        <div class="table-tools">
+            <input type="search" placeholder="Поиск сообщений..." data-table-search>
+            <a class="ghost-button" href="/get_all.json">JSON</a>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="table-scroll">
+            <table id="messagesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Сообщение</th>
+                        <th>Алгоритм</th>
+                        <th>IP</th>
+                        <th>Дата</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for message in messages %}
+                        <tr data-message-row data-search="{{ message.text|lower }} {{ message.algorithm_title|lower }} {{ message.ip|lower }} {{ message.datetime|lower }}">
+                            <td class="id-cell">#{{ message.id }}</td>
+                            <td class="message-cell">{{ message.text }}</td>
+                            <td><span class="algorithm-pill">{{ message.algorithm_title }}</span></td>
+                            <td>{{ message.ip }}</td>
+                            <td>{{ message.datetime }}</td>
+                            <td>
+                                {% if message.ip == "admin" %}
+                                    <span class="badge badge-warning">Админ</span>
+                                {% else %}
+                                    <span class="badge badge-success">Отправлено</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="empty-state hidden" data-search-empty>По вашему запросу ничего не найдено.</p>
+    {% else %}
+        <p class="empty-state">Пока сообщений нет</p>
+    {% endif %}
+</section>
+{% endblock %}
